@@ -1,25 +1,16 @@
 import board
 import copy
 
-
-class Node:
-    def __init__(self, board_instance, move=None, parent=None):
-        self.board_instance = board_instance
-        self.move = move
-        self.parent = parent
-        self.children = []
-
-    def add_child(self, child):
-        self.children.append(child)
-
-
+"""
+Class for solver
+"""
 class Solver:
     def __init__(self):
         self.node_count = 0
         self.score_each = None
         if self.score_each is None:
-            self.score_each = [[0 for _ in range(board.M)] for _ in
-                               range(board.N)]
+            self.score_each = [[0 for _ in range(board.M)] 
+                               for _ in range(board.N)]
 
     def negamax(self, board_instance: board.Board) -> int:
         """
@@ -43,6 +34,7 @@ class Solver:
             for x in range(board.M):
                 if (board_instance.is_valid_move((y, x))
                         and board_instance.is_winning_move((y, x))):
+                    # If the player can win, return the number of moves it takes
                     return (board.M * board.N + 1
                             - board_instance.get_num_moves()) // 2
 
@@ -51,14 +43,11 @@ class Solver:
         # Last, check all possible next moves and return the best one
         for y in range(board.N):
             for x in range(board.M):
-                if board_instance.is_valid_move(
-                        (y, x)):  # If valid, try this move
+                if board_instance.is_valid_move((y, x)):  # If valid, try this move
                     check_next_move = copy.deepcopy(board_instance)
-                    check_next_move.play(
-                        (y, x))  # Try this move on copy of board
+                    check_next_move.play((y, x))  # Try this move on copy of board
 
-                    score = -self.negamax(
-                        check_next_move)  # Recursion through tree
+                    score = -self.negamax(check_next_move)  # Recursion through tree
                     if score > best_score:
                         best_score = score  # Keep the best score in the branch only
 
@@ -73,13 +62,16 @@ class Solver:
         for y in range(board.N):
             for x in range(board.M):
                 if board_instance.is_valid_move((y, x)):
-                    check_next_move = copy.deepcopy(board_instance)
-                    check_next_move.play((y, x))
-                    self.score_each[y][x] = self.solve(check_next_move)
+                    check_move = copy.deepcopy(board_instance)
+                    if check_move.is_winning_move((y, x)):
+                        self.score_each[y][x] = (board.M * board.N + 1
+                            - board_instance.get_num_moves()) // 2
+                    else:
+                        check_move.play((y, x))
+                        self.score_each[y][x] = self.solve(check_move)
                 else:
-                    self.score_each[y][x] = 'X'
+                    self.score_each[y][x] = None
 
-        for i in self.score_each: print(i)
         return self.score_each
 
     def solve(self, board_instance: board.Board) -> int:
@@ -96,3 +88,10 @@ class Solver:
         :return:
         """
         return self.node_count
+    
+    def reset_node_count(self):
+        """
+
+        :return:
+        """
+        self.node_count = 0

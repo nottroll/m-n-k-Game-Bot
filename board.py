@@ -1,16 +1,19 @@
 """
-Class to represent a board state
+
 """
 
 M = 3  # Board of m width
 N = 3  # Board of n height
 K_IN_ROW = 3  # Require k tokens in a line to win
+assert M < 10 and N < 10, 'M and N must be less than 10'
 assert K_IN_ROW <= M and K_IN_ROW <= N, 'K_IN_ROW too large'
 
-
+"""
+Class to represent a board state
+"""
 class Board:
-    MIN_SCORE = M * N // 2 + 1
-    MAX_SCORE = -(M * N) // 2 - 1
+    MIN_SCORE = -(M * N) // 2 - 1
+    MAX_SCORE = M * N // 2 + 1
 
     # 0 is empty, 1 is player1, 2 is player2
     def __init__(self,
@@ -119,26 +122,12 @@ class Board:
         """
         return self.moves
 
-    def show_board(self):
-        if self.board is None:
-            print('Empty Board')
+# b = Board([[2, 1, 0],
+#            [0, 1, 0],
+#            [2, 0, 0]], 4)
 
-        for y in range(N):
-            for x in range(M):
-                if self.board[y][x] == 1:
-                    print(' X', end='')
-                elif self.board[y][x] == 2:
-                    print(' O', end='')
-                else:
-                    print(' .', end='')
-            print()
-        print()
-
-# b = Board([[0, 1, 2],
-#            [0, 2, 1],
-#            [0, 1, 0]], 5)
-
-# print(b.isWinningMove((0,0)))
-# print(b.isWinningMove((1,0)))
-# print(b.isWinningMove((1,1)))
-# print(b.isWinningMove((2,0)))
+# print(b.is_winning_move((0,0)))
+# print(b.is_winning_move((1,0)))
+# print(b.is_winning_move((2,1)))
+# print(b.is_winning_move((1,2)))
+# print(b.is_winning_move((2,0)))
