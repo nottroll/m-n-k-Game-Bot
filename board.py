@@ -2,21 +2,22 @@
 Class to represent a board state
 """
 
+M = 3  # Board of m width
+N = 3  # Board of n height
+K_IN_ROW = 3  # Require k tokens in a line to win
+assert K_IN_ROW <= M and K_IN_ROW <= N, 'K_IN_ROW too large'
+
 
 class Board:
-    WIDTH = 3
-    HEIGHT = 3
-    win_cond = 3  # no. of tokens in a line to win
-    assert win_cond <= WIDTH and win_cond <= HEIGHT, 'win_cond too large'
-    MIN_SCORE = WIDTH * HEIGHT // 2 + 1
-    MAX_SCORE = -(WIDTH * HEIGHT) // 2 - 1
+    MIN_SCORE = M * N // 2 + 1
+    MAX_SCORE = -(M * N) // 2 - 1
 
     # 0 is empty, 1 is player1, 2 is player2
     def __init__(self,
                  board=None,
                  moves=0):
         if board is None:
-            board = [[0 for _ in range(self.WIDTH)] for _ in range(self.HEIGHT)]
+            board = [[0 for _ in range(M)] for _ in range(N)]
         self.board = board
         self.moves = moves
 
@@ -62,51 +63,51 @@ class Board:
         curr_player = 1 + self.moves % 2
 
         # Check valid move
-        if (not (0 <= play_x < self.WIDTH) or
-                not (0 <= play_y < self.HEIGHT) or
+        if (not (0 <= play_x < M) or
+                not (0 <= play_y < N) or
                 not self.is_valid_move(move)):
             return False
 
         # Create range to check
         range_x = [x for x in
-                   range(play_x - self.win_cond + 1, play_x + self.win_cond)]
+                   range(play_x - K_IN_ROW + 1, play_x + K_IN_ROW)]
         range_y = [y for y in
-                   range(play_y - self.win_cond + 1, play_y + self.win_cond)]
+                   range(play_y - K_IN_ROW + 1, play_y + K_IN_ROW)]
 
         # Check rows "-" for winning by counting tokens for the current player.
         count_x = 1
         for dx in range_x:
-            if (0 <= dx < self.WIDTH
+            if (0 <= dx < M
                     and self.board[play_y][dx] == curr_player):
                 count_x += 1
-        if count_x == self.win_cond:
+        if count_x == K_IN_ROW:
             return True
 
         # Check cols "|" for winning by counting tokens for the current player.
         count_y = 1
         for dy in range_y:
-            if (0 <= dy < self.HEIGHT
+            if (0 <= dy < N
                     and self.board[dy][play_x] == curr_player):
                 count_y += 1
-        if count_y == self.win_cond:
+        if count_y == K_IN_ROW:
             return True
 
         # Check diagonals NW-SE "\" for winning
         count_d1 = 1
         for dx, dy in zip(range_x, range_y):
-            if (0 <= dx < self.WIDTH and 0 <= dy < self.HEIGHT
+            if (0 <= dx < M and 0 <= dy < N
                     and self.board[dy][dx] == curr_player):
                 count_d1 += 1
-        if count_d1 == self.win_cond:
+        if count_d1 == K_IN_ROW:
             return True
 
         # Check diagonals NE-SW "/" for winning
         count_d2 = 1
         for dx, dy in zip(range_x, reversed(range_y)):
-            if (0 <= dx < self.WIDTH and 0 <= dy < self.HEIGHT
+            if (0 <= dx < M and 0 <= dy < N
                     and self.board[dy][dx] == curr_player):
                 count_d2 += 1
-        if count_d2 == self.win_cond:
+        if count_d2 == K_IN_ROW:
             return True
 
         return False
@@ -120,16 +121,16 @@ class Board:
 
     def show_board(self):
         if self.board is None:
-            print('Empty')
+            print('Empty Board')
 
-        for y in range(self.HEIGHT):
-            for x in range(self.WIDTH):
+        for y in range(N):
+            for x in range(M):
                 if self.board[y][x] == 1:
-                    print('X', end='')
+                    print(' X', end='')
                 elif self.board[y][x] == 2:
-                    print('O', end='')
+                    print(' O', end='')
                 else:
-                    print('.', end='')
+                    print(' .', end='')
             print()
         print()
 

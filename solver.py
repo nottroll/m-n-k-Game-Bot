@@ -2,76 +2,97 @@ import board
 import copy
 
 
+class Node:
+    def __init__(self, board_instance, move=None, parent=None):
+        self.board_instance = board_instance
+        self.move = move
+        self.parent = parent
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
+
+
 class Solver:
     def __init__(self):
         self.node_count = 0
-        self.scores = None
-        # self.curr_move = curr_move
+        self.score_each = None
+        if self.score_each is None:
+            self.score_each = [[0 for _ in range(board.M)] for _ in
+                               range(board.N)]
 
-    def set_scores(self, move, score):
-        b = board.Board()
-        if self.scores is None:
-            self.scores = [[0 for _ in range(b.WIDTH)] for _ in range(b.HEIGHT)]
-        else:
-            y, x = move
-            self.scores[y][x] = score
-
-    def negamax(self, board: board.Board) -> int:
+    def negamax(self, board_instance: board.Board) -> int:
         """
         Recursively solves a move with the negamax algorithm. A move is assigned
         a score according to:
         - 0 for a draw
-        - >0 if player1 can win (the faster p1 wins, the higher the score)
-        - <0 if player2 can win (the faster p1 loses, the lower the score)
-        :param board:
+        - >0 if player1 can win no matter what (the faster p1 wins, the higher the score)
+        - <0 if player2 can win no matter what (the faster p1 loses, the lower the score)
+        :param board_instance:
         :return:
         """
         # Increment counter of nodes explored.
         self.node_count += 1
 
-        # Check if there are no moves available i.e. draw.
-        if board.get_num_moves() == board.WIDTH * board.HEIGHT:
-            print('draw')
+        # First, check if there are no moves available i.e. draw.
+        if board_instance.get_num_moves() == board.M * board.N:
             return 0
 
-        # Check if the player can win the next move
-        for y in range(board.HEIGHT):
-            for x in range(board.WIDTH):
-                if (board.is_valid_move((y, x))
-                        and board.is_winning_move((y, x))):
-                    print('p1 wins next move')
-                    return (board.WIDTH * board.HEIGHT + 1
-                            - board.get_num_moves()) // 2
+        # Second, check if the player can win the next move
+        for y in range(board.N):
+            for x in range(board.M):
+                if (board_instance.is_valid_move((y, x))
+                        and board_instance.is_winning_move((y, x))):
+                    return (board.M * board.N + 1
+                            - board_instance.get_num_moves()) // 2
 
-        best_score = -(board.WIDTH * board.HEIGHT + 1 // 2)
+        best_score = -(board.M * board.N + 1 // 2)
 
-        # Check all possible next moves and return the best one
-        for y in range(board.HEIGHT):
-            for x in range(board.WIDTH):
-                if board.is_valid_move((y, x)):
+        # Last, check all possible next moves and return the best one
+        for y in range(board.N):
+            for x in range(board.M):
+                if board_instance.is_valid_move(
+                        (y, x)):  # If valid, try this move
+                    check_next_move = copy.deepcopy(board_instance)
+                    check_next_move.play(
+                        (y, x))  # Try this move on copy of board
 
-                    print('Try this move:', (y, x))
-
-                    check_next_move = copy.deepcopy(board)
-
-                    check_next_move.show_board()
-                    print('Move no. :', check_next_move.moves)
-
-                    check_next_move.play((y, x))
-                    score = -1 * self.negamax(check_next_move)
-
-                    print(f'--- Board score for this branch {(y, x)}:', score,
-                          '---')
-
+                    score = -self.negamax(
+                        check_next_move)  # Recursion through tree
                     if score > best_score:
-                        best_score = score
-
-                    print()
+                        best_score = score  # Keep the best score in the branch only
 
         return best_score
 
-    def solve(self, board: board.Board) -> int:
-        return self.negamax(board)
+    def solve_score_each(self, board_instance: board.Board):
+        """
+
+        :param board_instance:
+        :return:
+        """
+        for y in range(board.N):
+            for x in range(board.M):
+                if board_instance.is_valid_move((y, x)):
+                    check_next_move = copy.deepcopy(board_instance)
+                    check_next_move.play((y, x))
+                    self.score_each[y][x] = self.solve(check_next_move)
+                else:
+                    self.score_each[y][x] = 'X'
+
+        for i in self.score_each: print(i)
+        return self.score_each
+
+    def solve(self, board_instance: board.Board) -> int:
+        """
+
+        :param board_instance:
+        :return:
+        """
+        return self.negamax(board_instance)
 
     def get_node_count(self) -> int:
+        """
+
+        :return:
+        """
         return self.node_count
