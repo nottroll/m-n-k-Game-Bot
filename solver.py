@@ -2,9 +2,11 @@ import board
 import copy
 
 """
-Class for solver
+Solver class which implements the recursive solving algorithms for an m,n,k-game
 """
 class Solver:
+    # TODO: Do not solve symmetric rotations and reflections of the same game.
+    
     def __init__(self):
         self.node_count = 0
         self.score_each = None
@@ -12,7 +14,7 @@ class Solver:
             self.score_each = [[0 for _ in range(board.M)] 
                                for _ in range(board.N)]
 
-    def negamax(self, board_instance: board.Board) -> int:
+    def negamax(self, board_instance: board.Board, alpha: int, beta: int) -> int:
         """
         Recursively solves a move with the negamax algorithm. A move is assigned
         a score according to:
@@ -20,6 +22,8 @@ class Solver:
         - >0 if player1 can win no matter what (the faster p1 wins, the higher the score)
         - <0 if player2 can win no matter what (the faster p1 loses, the lower the score)
         :param board_instance:
+        :param alpha:
+        :param beta:
         :return:
         """
         # Increment counter of nodes explored.
@@ -38,7 +42,11 @@ class Solver:
                     return (board.M * board.N + 1
                             - board_instance.get_num_moves()) // 2
 
-        best_score = -(board.M * board.N + 1 // 2)
+        max = (board.M * board.N -1 - board_instance.get_num_moves()) // 2
+        if beta > max:
+            beta = max
+            if alpha >= beta:
+                return beta
 
         # Last, check all possible next moves and return the best one
         for y in range(board.N):
@@ -46,12 +54,14 @@ class Solver:
                 if board_instance.is_valid_move((y, x)):  # If valid, try this move
                     check_next_move = copy.deepcopy(board_instance)
                     check_next_move.play((y, x))  # Try this move on copy of board
+                    
+                    score = -self.negamax(check_next_move, -beta, -alpha)  # Recursion through tree
+                    if score >= beta:
+                        return beta
+                    if score > alpha:
+                        alpha = score
 
-                    score = -self.negamax(check_next_move)  # Recursion through tree
-                    if score > best_score:
-                        best_score = score  # Keep the best score in the branch only
-
-        return best_score
+        return alpha
 
     def solve_score_each(self, board_instance: board.Board):
         """
@@ -80,7 +90,7 @@ class Solver:
         :param board_instance:
         :return:
         """
-        return self.negamax(board_instance)
+        return self.negamax(board_instance, -board.M * board.N // 2, board.M * board.N // 2)
 
     def get_node_count(self) -> int:
         """

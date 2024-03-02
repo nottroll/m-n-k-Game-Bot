@@ -7,3 +7,11 @@ The m,n,k-game is a 2-player game played on a m-by-n board where the goal is to 
 With parameters m=3,n=3,k=3, the game is identical to tic-tac-toe.
 
 See more information here: (https://en.wikipedia.org/wiki/M,n,k-game)
+
+## Negamax Algorithm
+
+
+## Alpha-beta pruning
+
+
+## Bitboard

@@ -2,6 +2,7 @@
 
 """
 
+TOKENS = ('X', 'O')
 M = 3  # Board of m width
 N = 3  # Board of n height
 K_IN_ROW = 3  # Require k tokens in a line to win
@@ -9,7 +10,7 @@ assert M < 10 and N < 10, 'M and N must be less than 10'
 assert K_IN_ROW <= M and K_IN_ROW <= N, 'K_IN_ROW too large'
 
 """
-Class to represent a board state
+Class to represent a board state for an m,n,k-game
 """
 class Board:
     MIN_SCORE = -(M * N) // 2 - 1

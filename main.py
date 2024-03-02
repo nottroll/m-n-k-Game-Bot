@@ -3,32 +3,32 @@ import display
 import solver
 import timeit
 
-
 if __name__ == '__main__':
-    curr_move = 0
+    # TODO: allow user to configure board m,n,k
+    
     solve = solver.Solver()
     board_state = board.Board()
+    curr_move = 0
 
+    # Game and solver loop
     while curr_move <= board.N * board.M:
-    # for _ in range(10):
-        print('-'*50)
-
-        print(f'\nMoves played: {curr_move}', 
-              f'Turn: Player {1 + curr_move % 2}',
-              f'Player token: {"X" if 1 + curr_move % 2 == 1 else "O"}',
+        display.print_divider()
+        
+        curr_player = 1 + curr_move % 2
+        print(f'Moves played: {curr_move}', 
+              f'Turn: Player {curr_player}',
+              f'Player token: {board.TOKENS[0] if curr_player == 1 else board.TOKENS[1]}',
               sep='  |  ', end='\n\n')
         
         # Solve and time performance
-        solve_start_time = timeit.default_timer()
+        solve_start = timeit.default_timer()
         move_scores = solve.solve_score_each(board_state)
-        solve_end_time = timeit.default_timer()
+        solve_end = timeit.default_timer()
 
         display.print_state_score(board_state, move_scores)
 
         solve_stats = solve.get_node_count()
-        print(f'Searched nodes: {solve_stats}', 
-              f'Solve time: {(solve_end_time-solve_start_time)*1000:.2f}ms', 
-              sep='\n', end='\n\n')
+        display.print_solve_stats(solve_stats, solve_end - solve_start)
         solve.reset_node_count()
 
         display.print_score_explanation()
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
         if board_state.is_winning_move(move):
             board_state.play(move)
-            print(f'Player {1 + curr_move % 2} wins!')
+            display.win_message(curr_player)
             display.print_state_score(board_state, move_scores)
             break
 
@@ -46,4 +46,4 @@ if __name__ == '__main__':
         curr_move += 1
 
     else:
-        print('Draw!')
+        display.draw_message()
