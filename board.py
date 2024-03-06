@@ -1,4 +1,6 @@
 """
+Alson Lee 
+Date: 02/03/24 
 
 """
 
@@ -6,7 +8,7 @@ TOKENS = ('X', 'O')
 M = 3  # Board of m width
 N = 3  # Board of n height
 K_IN_ROW = 3  # Require k tokens in a line to win
-assert M < 10 and N < 10, 'M and N must be less than 10'
+assert M < 6 and N < 6, 'M and N must be less than 6'
 assert K_IN_ROW <= M and K_IN_ROW <= N, 'K_IN_ROW too large'
 
 """
@@ -27,18 +29,17 @@ class Board:
 
     def is_valid_move(self, move: tuple) -> bool:
         """
-        Checks if the move is valid
-        :param move:
-        :return:
+        Checks if the move is valid.
+        :param move: the move to play
+        :return:     if the move is valid
         """
         y, x = move
         return True if self.board[y][x] == 0 else False
 
     def play(self, move: tuple):
         """
-        Plays a move
+        Plays a move.
         :param move:
-        :return:
         """
         if self.is_valid_move(move):
             y, x = move
@@ -47,9 +48,9 @@ class Board:
 
     def play_sequence(self, moves: list[tuple]) -> int:
         """
-        Plays a sequence of moves
-        :param moves:
-        :return:
+        Plays a sequence of moves.
+        :param moves: a list of moves to play
+        :return:      the number of moves to be played.
         """
         for move in moves:
             if self.is_winning_move(move):
@@ -60,8 +61,8 @@ class Board:
     def is_winning_move(self, move: tuple) -> bool:
         """
         Checks whether the move (row, col) or (y, x) is a winning move.
-        :param move:
-        :return:
+        :param move: the move to check
+        :return:     if the move is a winning move
         """
         play_y, play_x = move
         curr_player = 1 + self.moves % 2
@@ -118,8 +119,8 @@ class Board:
 
     def get_num_moves(self) -> int:
         """
-        Returns the number of moves played
-        :return:
+        Returns the number of moves played.
+        :return: the number of moves played
         """
         return self.moves
 
