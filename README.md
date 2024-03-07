@@ -15,3 +15,11 @@ The negamax algorithm is a simplification of the minimax algorithm using the fac
 Alpha-beta pruning is an optimisation which prevents the search algorithm from searching a move which is definitely worse than a previously searched move. `alpha` represents the min score for the maximising player (P1) and `beta` represents the max score for the minimising player (P2). As the algorithm searches, it keeps track of a score window `[alpha, beta]`. For exmaple, the algorithm finds a score of 10 for P1, hence for any further searches there is no need to explore scores >10 as the goal is to maximise the score of P1. 
 
 ## Bitboard
+Each board state is represented with 2 m*n bit integers: position and a mask. The position encodes the current players pieces and the mask encode all pieces played so far. The each turn the subsequent players pieces can be easily recovered with `position XOR mask`.
+```    
+Bit order      Board          Position       Mask        
+ 0  1  2  3    .  X  .  O     0  1  0  0     0  1  0  1     
+ 4  5  6  7    .  .  X  .     0  0  1  0     0  0  1  0 
+ 8  9 10 11    .  O  .  .     0  0  0  0     0  1  0  0 
+12 13 14 15    .  .  .  .     0  0  0  0     0  0  0  0 
+```

@@ -5,14 +5,6 @@ Date: 06/03/24
 The board module contains the board game logic for an m,n,k-game.
 """
 
-TOKENS = ('X', 'O')  # The symbols for the players
-M = 4                # Board of m width
-N = 4                # Board of n height
-K_IN_ROW = 3         # Require k tokens in a line to win
-
-# TODO: Optimise solver to handle larger cases.
-assert M <= 6 and N <= 6, 'M and N must too large'
-assert K_IN_ROW <= M and K_IN_ROW <= N, 'K_IN_ROW too large'
 
 """
 Class to represent a board state for an m,n,k-game
@@ -20,22 +12,34 @@ Class to represent a board state for an m,n,k-game
 class Board:
     """
     Each board cell is represented with a position bit and mask bit.
-    Position and mask is M*N bits. The key = Position + Mask is M*N+1 bits
+    Integers position and mask are M*N bits. The key = position + mask is M*N+1 bits.
     
-    Bit order      Board       Position    Mask        Key = Position + Mask
-     0  1  2  3    0 X 0 O     0 1 0 0     0 1 0 1     
-     4  5  6  7    0 0 X 0     0 0 1 0     0 0 1 0 
-     8  9 10 11    0 O 0 0     0 0 0 0     0 1 0 0 
-    12 13 14 15    0 0 0 0     0 0 0 0     0 0 0 0 
+    Bit order      Board          Position       Mask        
+     0  1  2  3    .  X  .  O     0  1  0  0     0  1  0  1     
+     4  5  6  7    .  .  X  .     0  0  1  0     0  0  1  0 
+     8  9 10 11    .  O  .  .     0  0  0  0     0  1  0  0 
+    12 13 14 15    .  .  .  .     0  0  0  0     0  0  0  0 
 
     """
-    MIN_SCORE = -(M * N) // 2 - 1
-    MAX_SCORE = M * N // 2 + 1
 
-    def __init__(self, position=0, mask=0, moves=0):
-        self.position = position
-        self.mask = mask
-        self.moves = moves  # number of moves played
+    def __init__(self, tokens = ('X', 'O'), 
+                 M = 3, N = 3, k_in_row = 3, 
+                 position=0, mask=0, moves=0):
+        self.tokens = tokens         # The symbols for the players
+        self.M = M                   # Board of m width
+        self.N = N                   # Board of n height
+        self.k_in_row = k_in_row     # Require k tokens in a line to win
+
+        # TODO: Optimise solver to handle larger cases.
+        assert self.M <= 6 and self.N <= 6, 'M and N too large'
+        assert self.k_in_row <= self.M and self.k_in_row <= self.N, 'k_in_row too large'
+
+        self.position = position  # encoding of pieces for the current player
+        self.mask = mask          # encoding of all pieces played
+        self.moves = moves        # number of moves played
+        
+        self.min_score = -(self.M * self.N) // 2 + 3
+        self.max_score = (self.M * self.N + 1) // 2 - 3
 
     def is_valid_move(self, move: int) -> bool:
         """
@@ -43,7 +47,7 @@ class Board:
         :param move: the move to play
         :return:     if the move is valid
         """
-        if 0 <= move < M * N and self.mask & (1 << move) == 0:
+        if 0 <= move < self.M * self.N and self.mask & (1 << move) == 0:
             return True
         return False
 
@@ -77,30 +81,30 @@ class Board:
         # Check next_pos if move is played. 
         next_pos = self.position
         next_pos |= 1 << move
-        # print(f'next: {next_pos:0{M*N}b}')
+        # print(f'next: {next_pos:0{self.M*N}b}')
 
         # Check the row of the token played for winning.
         # A winning row will have k-in-a-row bits set.
         # E.g. 4,3,3-game: 0000 1110 0000 wins
         # check_r is the checking mask for k-in-a-row bits set:
-        check_r = (1 << K_IN_ROW) - 1
-        for shift in range(0, M - K_IN_ROW + 1):
+        check_r = (1 << self.k_in_row) - 1
+        for shift in range(0, self.M - self.k_in_row + 1):
             # shift will check all positions within a row: 
             # E.g. 5,5,3-game: 11100 -> 01110 -> 00111
-            shift_r = next_pos >> (move // M * M) + shift
+            shift_r = next_pos >> (move // self.M * self.M) + shift
             if check_r & shift_r == check_r:
                 return True
         
         # Check the col of the token played for winning.
         # check_c is the checking mask for bits set at indices move % M:
         # E.g. 4,3,3-game: 0100 0100 0100 wins
-        check_c = 1 << (move % M) 
-        for _ in range(K_IN_ROW-1):
-            check_c <<= M
-            check_c |= 1 << (move % M) 
+        check_c = 1 << (move % self.M) 
+        for _ in range(self.k_in_row-1):
+            check_c <<= self.M
+            check_c |= 1 << (move % self.M) 
 
-        for shift in range(0, N - K_IN_ROW + 1):
-            shift_c = next_pos >> (shift * M)
+        for shift in range(0, self.N - self.k_in_row + 1):
+            shift_c = next_pos >> (shift * self.M)
             # shift next_pos by M bits until there is a match with check_c: 
             if check_c & shift_c == check_c:
                 return True
@@ -109,31 +113,29 @@ class Board:
         # TODO: Implement bitwise checking for diagonals.
             
         # Check diagonal NW-SE direction
-        d1 = [(move // M + i) * M + move % M + i 
-              if (0 <= (move // M + i) < N and 0 <= (move % M + i) < M) 
+        d1 = [(move // self.M + i) * self.M + move % self.M + i 
+              if (0 <= (move // self.M + i) < self.N and 0 <= (move % self.M + i) < self.M) 
               else -1 
-              for i in range(-K_IN_ROW + 1, K_IN_ROW)]
-        # print('d1', d1)
-        for i in range(len(d1) - K_IN_ROW + 1):
+              for i in range(-self.k_in_row + 1, self.k_in_row)]
+
+        for i in range(len(d1) - self.k_in_row + 1):
             check_d1 = 0
-            if d1[i] != -1 and d1[i+K_IN_ROW-1] != -1:
-                for j in range(K_IN_ROW):
+            if d1[i] != -1 and d1[i+self.k_in_row-1] != -1:
+                for j in range(self.k_in_row):
                     check_d1 |= 1 << d1[i+j]
                 if check_d1 & next_pos == check_d1:
                     return True
-        
 
         # Check diagonal NE-SW direction
-        d2 = [(move // M + i) * M + move % M - i 
-              if (0 <= (move // M + i) < N and 0 <= (move % M - i) < M) 
+        d2 = [(move // self.M + i) * self.M + move % self.M - i 
+              if (0 <= (move // self.M + i) < self.N and 0 <= (move % self.M - i) < self.M) 
               else -1 
-              for i in range(-K_IN_ROW + 1, K_IN_ROW)]
-        # print(d2)
-        for i in range(len(d2) - K_IN_ROW + 1):
+              for i in range(-self.k_in_row + 1, self.k_in_row)]
+
+        for i in range(len(d2) - self.k_in_row + 1):
             check_d2 = 0
-            if d2[i] != -1 and d2[i+K_IN_ROW-1] != -1:
-                for j in range(K_IN_ROW):
-                    # print(i, j)
+            if d2[i] != -1 and d2[i+self.k_in_row-1] != -1:
+                for j in range(self.k_in_row):
                     check_d2 |= 1 << d2[i+j]
                 if check_d2 & next_pos == check_d2:
                     return True
@@ -146,6 +148,9 @@ class Board:
         :return: the number of moves played
         """
         return self.moves
+    
+    def key(self) -> int:
+        return self.position + self.mask
 
        
 
