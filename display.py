@@ -8,7 +8,7 @@ The display module handles simple console output.
 import board
 
 MAX_DISPLAY_WIDTH = 60
-LPAD = 3
+LPAD = 4
 
 
 def print_state_score(board_state: board.Board, move_scores: list):
@@ -17,15 +17,20 @@ def print_state_score(board_state: board.Board, move_scores: list):
     :param board_state: the board state
     :param move_scores: the scores for the board state
     """
-    print('Board')
-    if board_state.board is None:
-        print('Empty Board')
+    curr_player = f'{board_state.position:0{board.M*board.N}b}'
+    next_player = f'{board_state.position^board_state.mask:0{board.M*board.N}b}'
 
-    for y in range(board.N):
-        for x in range(board.M):
-            if board_state.board[y][x] == 1:
+    if board_state.get_num_moves() % 2 == 0:
+        P1, P2 = curr_player, next_player # P1 on even turns
+    else:
+        P1, P2 = next_player, curr_player
+
+    print('Board')
+    for r in range(board.N):
+        for c in range(board.M):
+            if P1[-(r * board.M + c + 1)] == '1':
                 print(f'{board.TOKENS[0]:>{LPAD}}', end='')
-            elif board_state.board[y][x] == 2:
+            elif P2[-(r * board.M + c + 1)] == '1':
                 print(f'{board.TOKENS[1]:>{LPAD}}', end='')
             else:
                 print(f'{".":>{LPAD}}', end='')
@@ -39,6 +44,17 @@ def print_state_score(board_state: board.Board, move_scores: list):
                 print(f'{".":>{LPAD}}', end='')
             else:
                 print(f'{move_scores[y][x]:>{LPAD}}', end='')
+        print()
+    print()
+
+def print_board_cells():
+    """
+    Prints the board cell numbers.
+    """
+    print('Board cells')
+    for r in range(board.N):
+        for c in range(board.M):
+            print(f'{r*board.M + c + 1:>{LPAD}}', end='')
         print()
     print()
 

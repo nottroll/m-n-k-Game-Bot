@@ -1,6 +1,6 @@
 """
 Alson Lee
-Date: 02/03/24
+Date: 06/03/24
 
 Simple AI using negamax algorithm to solve m,n,k-games
 """
@@ -8,11 +8,12 @@ Simple AI using negamax algorithm to solve m,n,k-games
 import board
 import display
 import solver
+
 import timeit
 
 def main():
     # TODO: allow user to configure board m,n,k
-    
+
     solve = solver.Solver()
     board_state = board.Board()
     curr_move = 0
@@ -35,14 +36,15 @@ def main():
         solve_stats = solve.get_node_count()
 
         # Display board and solve scores to console
+        display.print_board_cells()
         display.print_state_score(board_state, move_scores)
         display.print_solve_stats(solve_stats, solve_end - solve_start)
         solve.reset_node_count()
 
         display.print_score_explanation()
         
-        inp = input('Which move to play? Enter in format row,col e.g. 1,1: \n >>> ')
-        move = tuple([int(i) for i in inp.split(',')])
+        print(f'Which board cell to play? Enter a cell between 0 and {board.M * board.N}:')
+        move = int(input(' >>> ')) - 1
 
         # Check win
         if board_state.is_winning_move(move):

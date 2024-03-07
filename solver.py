@@ -1,6 +1,8 @@
 """
 Alson Lee
-Date: 02/03/24
+Date: 06/03/24
+
+The solver module contains the solving algorithms for an m,n,k-game.
 """
 
 import board
@@ -18,6 +20,7 @@ class Solver:
         if self.score_each is None:
             self.score_each = [[0 for _ in range(board.M)]
                                for _ in range(board.N)]
+        self.mem_table = {}
 
     def negamax(self, board_instance: board.Board, alpha: int,
                 beta: int) -> int:
@@ -46,13 +49,12 @@ class Solver:
             return 0
 
         # Second, check if the player can win the next move
-        for y in range(board.N):
-            for x in range(board.M):
-                if (board_instance.is_valid_move((y, x))
-                        and board_instance.is_winning_move((y, x))):
-                    # If the player can win, return the number of moves it takes
-                    return (board.M * board.N
-                            - board_instance.get_num_moves() + 1) // 2
+        for move in range(board.M * board.N):
+            if (board_instance.is_valid_move(move)
+                    and board_instance.is_winning_move(move)):
+                # If the player can win, return the number of moves it takes
+                return (board.M * board.N
+                        - board_instance.get_num_moves() + 1) // 2
 
         # The upper bound of beta should not exceed the score limited by the board.
         upper_bound = (board.M * board.N - board_instance.get_num_moves() - 1) // 2
@@ -63,20 +65,19 @@ class Solver:
                 return beta
 
         # Last, check all possible next moves and return the best one
-        for y in range(board.N):
-            for x in range(board.M):
-                if board_instance.is_valid_move(
-                        (y, x)):  # If valid, try this move
-                    check_next_move = copy.deepcopy(board_instance)
-                    check_next_move.play(
-                        (y, x))  # Try the valid move on copy of board
+        for move in range(board.M * board.N):
+            
+            # If valid, try this move
+            if board_instance.is_valid_move(move):  
+                check_next_move = copy.deepcopy(board_instance)
+                check_next_move.play(move)  # Try the valid move on copy of board
 
-                    # Recursively solve through the move switching +ve, -ve each time.
-                    score = -self.negamax(check_next_move, -beta, -alpha)
-                    if score >= beta:
-                        return beta
-                    if score > alpha:
-                        alpha = score
+                # Recursively solve through the move switching +ve, -ve each time.
+                score = -self.negamax(check_next_move, -beta, -alpha)
+                if score >= beta:
+                    return beta
+                if score > alpha:
+                    alpha = score
 
         return alpha
 
@@ -87,18 +88,17 @@ class Solver:
         :param board_instance: the board instance being solved
         :return:               score matrix of each valid move
         """
-        for y in range(board.N):
-            for x in range(board.M):
-                if board_instance.is_valid_move((y, x)):
-                    check_move = copy.deepcopy(board_instance)
-                    if check_move.is_winning_move((y, x)):
-                        self.score_each[y][x] = (board.M * board.N + 1
-                                                 - board_instance.get_num_moves()) // 2
-                    else:
-                        check_move.play((y, x))
-                        self.score_each[y][x] = self.solve(check_move)
+        for move in range(board.M * board.N):
+            if board_instance.is_valid_move(move):
+                check_move = copy.deepcopy(board_instance)
+                if check_move.is_winning_move(move):
+                    self.set_score_each(move, (board.M * board.N + 1
+                                                - board_instance.get_num_moves()) // 2)
                 else:
-                    self.score_each[y][x] = None
+                    check_move.play(move)
+                    self.set_score_each(move, self.solve(check_move))
+            else:
+                self.set_score_each(move, None)
 
         return self.score_each
 
@@ -124,3 +124,9 @@ class Solver:
         Resets the number of nodes which have been explored to 0.
         """
         self.node_count = 0
+
+    def set_score_each(self, move: int, value: int):
+        row = move // board.M
+        col = move % board.M
+
+        self.score_each[row][col] = value
