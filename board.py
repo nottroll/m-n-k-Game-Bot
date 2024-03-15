@@ -1,10 +1,11 @@
 """
 Alson Lee
-Date: 06/03/24 
+Date: 15/03/24 
 
 The board module contains the board game logic for an m,n,k-game.
 """
 
+import numpy as np
 
 """
 Class to represent a board state for an m,n,k-game
@@ -24,14 +25,14 @@ class Board:
 
     def __init__(self, tokens = ('X', 'O'), 
                  M = 3, N = 3, k_in_row = 3, 
-                 position=0, mask=0, moves=0):
+                 position=np.uint(0), mask=np.uint(0), moves=0):
         self.tokens = tokens         # The symbols for the players
         self.M = M                   # Board of m width
         self.N = N                   # Board of n height
         self.k_in_row = k_in_row     # Require k tokens in a line to win
 
         # TODO: Optimise solver to handle larger cases.
-        assert self.M <= 6 and self.N <= 6, 'M and N too large'
+        assert 2 < self.M <= 6 and 2 < self.N <= 6, 'M and N too large'
         assert self.k_in_row <= self.M and self.k_in_row <= self.N, 'k_in_row too large'
 
         self.position = position  # encoding of pieces for the current player
@@ -41,7 +42,7 @@ class Board:
         self.min_score = -(self.M * self.N) // 2 + 3
         self.max_score = (self.M * self.N + 1) // 2 - 3
 
-    def is_valid_move(self, move: int) -> bool:
+    def is_valid_move(self, move: np.uint) -> bool:
         """
         Checks if the move is valid.
         :param move: the move to play
@@ -51,7 +52,7 @@ class Board:
             return True
         return False
 
-    def play(self, move: int):
+    def play(self, move: np.uint):
         """
         Plays a move.
         :param move: the move to play
@@ -72,7 +73,7 @@ class Board:
             self.play(move)
         return len(moves)
     
-    def is_winning_move(self, move: int) -> bool:
+    def is_winning_move(self, move: np.uint) -> bool:
         """
         Checks whether the move is a winning move.
         :param move: the move to check
@@ -149,11 +150,37 @@ class Board:
         """
         return self.moves
     
-    def key(self) -> int:
+    def key(self) -> np.uint:
+        """
+        Returns the key for the board state. key = position + mask.
+        :return: the key for the board state
+        """
         return self.position + self.mask
 
-       
+    def get_symmetric_states(self) -> set:
+        sym = set()
+        str_position = f'{self.position:0{self.M*self.N}b}'
+        str_mask = f'{self.mask:0{self.M*self.N}b}'
 
+        # Get horizontal reflection
+        pos_h_reflect = ''.join(reversed([str_position[i:i+self.M] for i in range(0, len(str_position), self.M)]))
+        mask_h_reflect = ''.join(reversed([str_mask[i:i+self.M] for i in range(0, len(str_mask), self.M)]))
+        sym.add(int(pos_h_reflect) + int(mask_h_reflect))
+
+        # Get 180deg rotation
+        pos_180_rot = int(str_position[::-1],2)
+        mask_180_rot = int(str_mask[::-1],2)
+        sym.add(pos_180_rot + mask_180_rot)
+
+        # print(f'pos: {pos:0{self.M*self.N}b}', f'mask: {mask:0{self.M*self.N}b}')
+        return sym
+
+
+
+
+"""
+Debugging
+"""
 # b = Board([[2, 1, 0],
 #            [0, 1, 0],
 #            [2, 0, 0]], 4)
@@ -170,7 +197,9 @@ class Board:
 
 # b = Board()
 
-# b.play_sequence([5])
+# b.play_sequence([5,2,4,1])
 
-# print(f'pos: {b.position:0{M*N}b}', f'mask: {b.mask:0{M*N}b}')
+# b.get_symmetric_states()
+
+# print(f'pos: {b.position:0{b.M*b.N}b}', f'mask: {b.mask:0{b.M*b.N}b}')
 # print(b.is_winning_move(2))

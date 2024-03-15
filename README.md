@@ -4,7 +4,7 @@ This project implements an AI which uses the negamax algorithm to solve the m,n,
 
 The m,n,k-game is a 2-player game played on a m-by-n board where the goal is to have k-in-a-line either horizontally, vertically or diagonally. Each player takes turns to put down their token on a free board space until a player wins or draw if all free spaces have been used.
 
-With parameters m=3,n=3,k=3, the game is identical to tic-tac-toe.
+With parameters m=3,n=3,k=3, the game is an instance of tic-tac-toe.
 
 See more information here: (https://en.wikipedia.org/wiki/M,n,k-game)
 
@@ -22,4 +22,14 @@ Bit order      Board          Position       Mask
  4  5  6  7    .  .  X  .     0  0  1  0     0  0  1  0 
  8  9 10 11    .  O  .  .     0  0  0  0     0  1  0  0 
 12 13 14 15    .  .  .  .     0  0  0  0     0  0  0  0 
+```
+
+## Search Order
+Moves are searched in an outwards spiral which unwinds from the middle in the clockwise direction. The idea is that moves played near the centre have more impactful branches which will create more opportunities for alpha-beta pruning.
+```    
+Search order   
+16 15 14 13    
+ 5  4  3 12
+ 6  1  2 11
+ 7  8  9 10
 ```

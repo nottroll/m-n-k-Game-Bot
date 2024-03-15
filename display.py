@@ -1,6 +1,6 @@
 """
 Alson Lee
-Date: 02/03/24
+Date: 15/03/24
 
 The display module handles simple console output.
 """
@@ -54,7 +54,7 @@ def print_board_score(board_state: board.Board, move_scores: list):
     :param board_state: the board state
     :param move_scores: the scores for the board state
     """
-    player = 1 if board_state.get_num_moves() % 2 else 2        
+    player = 1 if board_state.get_num_moves() % 2 == 0 else 2        
     scores = set()
     for y in range(board_state.N):
         for x in range(board_state.M):

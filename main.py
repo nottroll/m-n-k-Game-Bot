@@ -1,6 +1,6 @@
 """
 Alson Lee
-Date: 06/03/24
+Date: 15/03/24
 
 Simple AI using negamax algorithm to solve m,n,k-games
 """
@@ -15,13 +15,12 @@ import timeit
 """
 GAME SETTINGS
 """
-BOARD_WIDTH = 3   # Set the board width
-BOARD_HEIGHT = 3  # Set the board height
-K_IN_A_ROW = 3    # Set number of tokens in a row to win
+BOARD_WIDTH = 4   # Set the board width
+BOARD_HEIGHT = 4  # Set the board height
+K_IN_A_ROW = 4    # Set number of tokens in a row to win
 
 def main():
-    # TODO: allow user to configure board m,n,k
-
+    # Instantiate board and solver for the board
     board_state = board.Board(N=BOARD_WIDTH, M=BOARD_HEIGHT, k_in_row=K_IN_A_ROW)
     solve = solver.Solver(board_state)
     curr_move = 0
@@ -37,7 +36,7 @@ def main():
               f'Player token: {board_state.tokens[0] if curr_player == 1 else board_state.tokens[1]}',
               sep='  |  ', end='\n\n')
         
-        # Solver performance
+        # Solve and measure performance
         solve_start = timeit.default_timer()
         move_scores = solve.solve_score_each(board_state)
         solve_end = timeit.default_timer()
